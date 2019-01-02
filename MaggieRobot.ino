@@ -22,6 +22,9 @@ const int pin_Rev[] = {pin_motor1rev, pin_motor2rev};
 
 const int motors = 2;
 
+const long CmdIntervalMillis = 2000;
+long CmdStartMillis;
+
 void setup()
 {
     Serial.begin(9600);
@@ -40,7 +43,7 @@ void setup()
 
 void loop()
 {
-        Serial.println("loop");
+    Serial.println("loop");
     if (irrecv.decode(&results)) // have we received an IR signal?
 
     {
@@ -48,7 +51,8 @@ void loop()
         irrecv.resume(); // receive the next value
     }
 
-    delay(500);
+    CommandHouseKeeping();
+    delay(100);
 }
 
 void translateIR()
@@ -170,28 +174,45 @@ int SanitizeSpeed(int speed)
     return speed;
 }
 
+void CommandHouseKeeping()
+{
+    if(millis()-CmdStartMillis>CmdIntervalMillis)
+    {
+        CmdStop();
+    }
+}
+
+void CmdCommon()
+{
+    CmdStartMillis = millis();
+}
 void CmdGoForward()
 {
+    CmdCommon();
     SetMotorSpeed(rightMotor, 100);
     SetMotorSpeed(leftMotor, 100);
 }
 void CmdGoBackwards()
 {
+    CmdCommon();
     SetMotorSpeed(rightMotor, -100);
     SetMotorSpeed(leftMotor, -100);
 }
 void CmdGoLeft()
 {
+    CmdCommon();
     SetMotorSpeed(rightMotor, 100);
     SetMotorSpeed(leftMotor, -100);
 }
 void CmdGoRight()
 {
+    CmdCommon();
     SetMotorSpeed(rightMotor, -100);
     SetMotorSpeed(leftMotor, 100);
 }
 void CmdStop()
 {
+    CmdCommon();
     SetMotorSpeed(rightMotor, 0);
     SetMotorSpeed(leftMotor, 0);
 }

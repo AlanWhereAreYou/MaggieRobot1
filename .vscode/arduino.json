@@ -1,5 +1,6 @@
 {
-    "port": "COM3",
+    "port": "COM4",
+    "output": "../build",
     "board": "arduino:avr:uno",
     "sketch": "MaggieRobot.ino"
 }
