@@ -22,8 +22,13 @@ const int pin_Rev[] = {pin_motor1rev, pin_motor2rev};
 
 const int motors = 2;
 
-const long CmdIntervalMillis = 2000;
+const long CmdFwdMillis = 2000;
+const long CmdRevMillis = 2000;
+const long CmdLeftMillis = 300;
+const long CmdRightMillis = 300;
+
 long CmdStartMillis;
+long CmdCurrentIntervalMillis;
 
 void setup()
 {
@@ -69,11 +74,11 @@ void translateIR()
         break;
     case 0xFF629D:
         Serial.println("VOL+");
-        CmdGoForward();
+        CmdGoForward(CmdFwdMillis);
         break;
     case 0xFF22DD:
-        Serial.println("FAST BACK");
-        CmdGoRight();
+        Serial.println("FAST BACK"); // Don't be fooled, this is the right arrow
+        CmdGoRight(CmdRightMillis);
         break;
     case 0xFF02FD:
         Serial.println("PAUSE");
@@ -81,14 +86,14 @@ void translateIR()
         break;
     case 0xFFC23D:
         Serial.println("FAST FORWARD");
-        CmdGoLeft();
+        CmdGoLeft(CmdLeftMillis); // Don't be fooled, this is the left arrow
         break;
     case 0xFFE01F:
         Serial.println("DOWN");
         break;
     case 0xFFA857:
         Serial.println("VOL-");
-        CmdGoBackwards();
+        CmdGoBackwards(CmdRevMillis);
         break;
     case 0xFF906F:
         Serial.println("UP");
@@ -176,43 +181,44 @@ int SanitizeSpeed(int speed)
 
 void CommandHouseKeeping()
 {
-    if(millis()-CmdStartMillis>CmdIntervalMillis)
+    if(millis()-CmdStartMillis>CmdCurrentIntervalMillis)
     {
         CmdStop();
     }
 }
 
-void CmdCommon()
+void CmdCommon(long interval_millis)
 {
     CmdStartMillis = millis();
+    CmdCurrentIntervalMillis = interval_millis;
 }
-void CmdGoForward()
+
+void CmdGoForward(long interval_millis)
 {
-    CmdCommon();
+    CmdCommon(interval_millis);
     SetMotorSpeed(rightMotor, 100);
     SetMotorSpeed(leftMotor, 100);
 }
-void CmdGoBackwards()
+void CmdGoBackwards(long interval_millis)
 {
-    CmdCommon();
+    CmdCommon(interval_millis);
     SetMotorSpeed(rightMotor, -100);
     SetMotorSpeed(leftMotor, -100);
 }
-void CmdGoLeft()
+void CmdGoLeft(long interval_millis)
 {
-    CmdCommon();
-    SetMotorSpeed(rightMotor, 100);
-    SetMotorSpeed(leftMotor, -100);
+    CmdCommon(interval_millis);
+    SetMotorSpeed(rightMotor, 10);
+    SetMotorSpeed(leftMotor, -10);
 }
-void CmdGoRight()
+void CmdGoRight(long interval_millis)
 {
-    CmdCommon();
-    SetMotorSpeed(rightMotor, -100);
-    SetMotorSpeed(leftMotor, 100);
+    CmdCommon(interval_millis);
+    SetMotorSpeed(rightMotor, -10);
+    SetMotorSpeed(leftMotor, 10);
 }
 void CmdStop()
 {
-    CmdCommon();
     SetMotorSpeed(rightMotor, 0);
     SetMotorSpeed(leftMotor, 0);
 }
